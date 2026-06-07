@@ -2,7 +2,7 @@
 
 Project name: LinePulse OEE
 
-Repository: https://github.com/rudy774/linepulse-oee
+Repository: https://github.com/rudy774/helloworldcs
 
 License: MIT
 
@@ -17,4 +17,3 @@ This project needs many small but careful contributions: adapters for manufactur
 Open-source impact:
 
 Small manufacturers often start continuous-improvement work in spreadsheets because commercial analytics tools are expensive or difficult to adopt. A lightweight open-source baseline helps teams learn from their data, validate OEE calculations, and build a shared vocabulary around downtime and lost production time.
-
