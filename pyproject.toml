@@ -1,0 +1,36 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "linepulse-oee"
+version = "0.1.0"
+description = "Dependency-light OEE and bottleneck analysis for manufacturing event logs."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [
+  { name = "rudy774" }
+]
+keywords = ["manufacturing", "oee", "bottleneck", "shopfloor", "analytics"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Manufacturing",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Information Analysis"
+]
+
+[project.urls]
+Homepage = "https://github.com/rudy774/linepulse-oee"
+Issues = "https://github.com/rudy774/linepulse-oee/issues"
+
+[project.scripts]
+linepulse = "linepulse_oee.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/linepulse_oee"]
+

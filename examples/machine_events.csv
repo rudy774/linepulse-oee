@@ -1,0 +1,12 @@
+asset,start,end,state,reason,good_count,scrap_count,ideal_cycle_seconds
+Press-1,2026-06-01T06:00:00,2026-06-01T06:45:00,running,,520,8,4.5
+Press-1,2026-06-01T06:45:00,2026-06-01T07:05:00,downtime,die change,0,0,4.5
+Press-1,2026-06-01T07:05:00,2026-06-01T08:00:00,running,,640,12,4.5
+Press-1,2026-06-01T08:00:00,2026-06-01T08:15:00,planned_stop,break,0,0,4.5
+Press-1,2026-06-01T08:15:00,2026-06-01T09:00:00,running,,500,5,4.5
+Welder-2,2026-06-01T06:00:00,2026-06-01T06:30:00,running,,180,3,8.0
+Welder-2,2026-06-01T06:30:00,2026-06-01T06:50:00,idle,waiting on fixtures,0,0,8.0
+Welder-2,2026-06-01T06:50:00,2026-06-01T07:50:00,running,,410,10,8.0
+Welder-2,2026-06-01T07:50:00,2026-06-01T08:10:00,changeover,model change,0,0,8.0
+Welder-2,2026-06-01T08:10:00,2026-06-01T09:00:00,running,,320,12,8.0
+
