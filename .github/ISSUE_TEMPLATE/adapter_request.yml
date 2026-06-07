@@ -1,0 +1,40 @@
+name: Adapter request
+description: Request support for a historian, MES, CMMS, or spreadsheet export format.
+title: "[Adapter]: "
+labels: ["adapter", "good first issue"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please remove proprietary data before sharing examples. Synthetic headers and a few fake rows are usually enough to start.
+  - type: input
+    id: source_system
+    attributes:
+      label: Source system
+      placeholder: Ignition historian, MES export, manual downtime spreadsheet, etc.
+    validations:
+      required: true
+  - type: textarea
+    id: columns
+    attributes:
+      label: Available columns
+      description: Paste anonymized column names and a few fake rows if possible.
+      render: csv
+    validations:
+      required: true
+  - type: textarea
+    id: mapping
+    attributes:
+      label: Desired mapping
+      description: How should the source columns map to LinePulse fields?
+      placeholder: |
+        machine_name -> asset
+        state_start -> start
+        state_end -> end
+        status -> state
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Any quirks, timestamps, units, or reason-code conventions?
+

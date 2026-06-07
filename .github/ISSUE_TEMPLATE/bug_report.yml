@@ -1,0 +1,43 @@
+name: Bug report
+description: Report incorrect calculations, CLI errors, or broken documentation.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a problem. Please anonymize any plant, customer, operator, or production-sensitive data.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What happened?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Include the command, a minimal CSV snippet, and the observed output.
+      placeholder: |
+        1. Run `linepulse analyze sample.csv --pareto`
+        2. See ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: |
+        OS:
+        Python:
+        LinePulse OEE version or commit:
+    validations:
+      required: false
+

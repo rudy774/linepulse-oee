@@ -1,5 +1,10 @@
 # LinePulse OEE
 
+[![tests](https://github.com/rudy774/linepulse-oee/actions/workflows/tests.yml/badge.svg)](https://github.com/rudy774/linepulse-oee/actions/workflows/tests.yml)
+[![license: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](pyproject.toml)
+[![release](https://img.shields.io/github/v/release/rudy774/linepulse-oee?include_prereleases&label=release)](https://github.com/rudy774/linepulse-oee/releases)
+
 LinePulse OEE is a small open-source toolkit for turning manufacturing event logs into practical OEE, downtime, and bottleneck reports. It is designed for teams that have CSV exports from PLCs, historians, MES systems, or manual downtime logs, but do not yet have a clean analytics layer.
 
 The first release focuses on three things:
@@ -85,6 +90,10 @@ Welder-2   64.4%  76.9%         86.3%        97.0%    0.93
 ```
 
 Markdown and JSON reports include a `Downtime Pareto` section that ranks downtime reasons by lost hours, share of downtime, cumulative share, and affected assets.
+
+## Sample Report
+
+![LinePulse OEE sample report](docs/assets/sample-report.svg)
 
 ## Roadmap
 

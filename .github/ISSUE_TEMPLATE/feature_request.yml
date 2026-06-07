@@ -1,0 +1,39 @@
+name: Feature request
+description: Suggest a new report, metric, CLI option, or workflow.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What manufacturing or analytics problem would this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the feature and how it should work.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - OEE calculations
+        - Downtime analysis
+        - Shift calendars
+        - CSV validation
+        - Reports
+        - Documentation
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: examples
+    attributes:
+      label: Example data or output
+      description: Add anonymized examples if helpful.
+
