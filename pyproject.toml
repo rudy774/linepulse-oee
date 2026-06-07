@@ -25,8 +25,8 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/rudy774/helloworldcs"
-Issues = "https://github.com/rudy774/helloworldcs/issues"
+Homepage = "https://github.com/rudy774/linepulse-oee"
+Issues = "https://github.com/rudy774/linepulse-oee/issues"
 
 [project.scripts]
 linepulse = "linepulse_oee.cli:main"

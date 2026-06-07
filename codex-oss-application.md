@@ -2,7 +2,7 @@
 
 Project name: LinePulse OEE
 
-Repository: https://github.com/rudy774/helloworldcs
+Repository: https://github.com/rudy774/linepulse-oee
 
 License: MIT
 
