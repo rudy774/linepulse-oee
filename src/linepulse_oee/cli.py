@@ -22,6 +22,11 @@ def build_parser() -> argparse.ArgumentParser:
 
     analyze = subparsers.add_parser("analyze", help="Analyze a machine event CSV.")
     analyze.add_argument("csv_path", type=Path, help="Path to a machine event CSV.")
+    analyze.add_argument(
+        "--calendar",
+        type=Path,
+        help="Optional JSON shift calendar for deriving planned production time.",
+    )
     analyze.add_argument("--json", type=Path, help="Write full report JSON to this path.")
     analyze.add_argument("--markdown", type=Path, help="Write Markdown report to this path.")
     analyze.add_argument(
@@ -42,7 +47,7 @@ def main(argv: list[str] | None = None) -> int:
         print(TEMPLATE, end="")
         return 0
 
-    report = analyze_csv(args.csv_path)
+    report = analyze_csv(args.csv_path, calendar_path=args.calendar)
     print(render_text_table(report))
     if args.pareto and report.downtime_pareto:
         print()

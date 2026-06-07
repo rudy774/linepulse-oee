@@ -75,6 +75,12 @@ Print the downtime Pareto table too:
 linepulse analyze examples/machine_events.csv --pareto
 ```
 
+Use a shift calendar to derive planned production time from scheduled shifts and breaks:
+
+```powershell
+linepulse analyze examples/machine_events.csv --calendar examples/shift_calendar.json --pareto
+```
+
 Write JSON and Markdown reports:
 
 ```powershell
@@ -91,13 +97,15 @@ Welder-2   64.4%  76.9%         86.3%        97.0%    0.93
 
 Markdown and JSON reports include a `Downtime Pareto` section that ranks downtime reasons by lost hours, share of downtime, cumulative share, and affected assets.
 
+Shift calendars are documented in [docs/shift-calendars.md](docs/shift-calendars.md).
+
 ## Sample Report
 
 ![LinePulse OEE sample report](docs/assets/sample-report.svg)
 
 ## Roadmap
 
-- shift calendars and takt targets
+- takt targets
 - reason-code normalization
 - Pareto charts for downtime reasons
 - notebook examples for continuous improvement reviews

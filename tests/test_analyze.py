@@ -9,6 +9,7 @@ from linepulse_oee.analyze import (
     render_markdown,
     render_pareto_table,
 )
+from linepulse_oee.shift_calendar import read_shift_calendar
 
 
 class AnalyzeEventsTests(unittest.TestCase):
@@ -68,6 +69,81 @@ Welder-2,2026-06-01T06:20:00,2026-06-01T06:30:00,idle,waiting on fixtures,0,0,8
         self.assertEqual(pareto[0].assets, ("Press-1", "Welder-2"))
         self.assertIn("Downtime Pareto", render_markdown(report))
         self.assertIn("material jam", render_pareto_table(report))
+
+    def test_shift_calendar_derives_planned_time_and_excludes_breaks(self) -> None:
+        csv_text = """asset,start,end,state,reason,good_count,scrap_count,ideal_cycle_seconds
+Press-1,2026-06-01T06:00:00,2026-06-01T07:00:00,running,,60,0,60
+Press-1,2026-06-01T07:15:00,2026-06-01T08:00:00,downtime,maintenance,0,0,60
+"""
+        calendar = read_shift_calendar(
+            io.StringIO(
+                """{
+  "weekdays": ["monday"],
+  "shifts": [
+    {
+      "name": "day",
+      "start": "06:00",
+      "end": "08:00",
+      "breaks": [{"name": "break", "start": "07:00", "end": "07:15"}]
+    }
+  ]
+}"""
+            )
+        )
+
+        report = analyze_events(read_events(io.StringIO(csv_text)), calendar=calendar)
+        asset = report.assets[0]
+
+        self.assertEqual(asset.planned_seconds, 6300)
+        self.assertEqual(asset.runtime_seconds, 3600)
+        self.assertEqual(asset.downtime_seconds, 2700)
+        self.assertAlmostEqual(asset.availability, 3600 / 6300)
+        self.assertEqual(report.warnings, [])
+
+    def test_shift_calendar_honors_planned_stop_rows(self) -> None:
+        csv_text = """asset,start,end,state,reason,good_count,scrap_count,ideal_cycle_seconds
+Press-1,2026-06-01T06:00:00,2026-06-01T07:00:00,running,,60,0,60
+Press-1,2026-06-01T07:00:00,2026-06-01T07:30:00,planned_stop,team meeting,0,0,60
+Press-1,2026-06-01T07:30:00,2026-06-01T09:00:00,downtime,maintenance,0,0,60
+"""
+        calendar = read_shift_calendar(
+            io.StringIO(
+                """{
+  "weekdays": ["monday"],
+  "shifts": [{"name": "day", "start": "06:00", "end": "09:00"}]
+}"""
+            )
+        )
+
+        report = analyze_events(read_events(io.StringIO(csv_text)), calendar=calendar)
+        asset = report.assets[0]
+
+        self.assertEqual(asset.planned_seconds, 9000)
+        self.assertEqual(asset.runtime_seconds, 3600)
+        self.assertEqual(asset.downtime_seconds, 5400)
+        self.assertNotIn("team meeting", asset.downtime_by_reason)
+
+    def test_shift_calendar_adds_unclassified_gap_warning(self) -> None:
+        csv_text = """asset,start,end,state,reason,good_count,scrap_count,ideal_cycle_seconds
+Press-1,2026-06-01T06:00:00,2026-06-01T07:00:00,running,,60,0,60
+Press-1,2026-06-01T07:50:00,2026-06-01T08:00:00,downtime,maintenance,0,0,60
+"""
+        calendar = read_shift_calendar(
+            io.StringIO(
+                """{
+  "weekdays": ["monday"],
+  "shifts": [{"name": "day", "start": "06:00", "end": "08:00"}]
+}"""
+            )
+        )
+
+        report = analyze_events(read_events(io.StringIO(csv_text)), calendar=calendar)
+        asset = report.assets[0]
+
+        self.assertEqual(asset.planned_seconds, 7200)
+        self.assertEqual(asset.downtime_by_reason["maintenance"], 600)
+        self.assertEqual(asset.downtime_by_reason["unclassified calendar gap"], 3000)
+        self.assertIn("unclassified calendar gap", report.warnings[0])
 
 
 if __name__ == "__main__":

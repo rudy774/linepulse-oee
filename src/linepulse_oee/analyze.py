@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Iterable, TextIO
 
 from .model import VALID_STATES, AssetMetrics, Event, PlantReport
+from .shift_calendar import ShiftCalendar, read_shift_calendar
 
 
 def read_events(source: str | Path | TextIO) -> list[Event]:
@@ -27,11 +28,15 @@ def read_events(source: str | Path | TextIO) -> list[Event]:
     return events
 
 
-def analyze_events(events: Iterable[Event]) -> PlantReport:
+def analyze_events(events: Iterable[Event], calendar: ShiftCalendar | None = None) -> PlantReport:
+    events = sorted(events, key=lambda item: (item.asset, item.start, item.end))
     by_asset: dict[str, AssetMetrics] = {}
+    horizons: dict[str, list[datetime]] = {}
+    planned_stop_seconds: dict[str, float] = {}
+    covered_seconds: dict[str, float] = {}
     warnings: list[str] = []
 
-    for event in sorted(events, key=lambda item: (item.asset, item.start, item.end)):
+    for event in events:
         metrics = by_asset.setdefault(event.asset, AssetMetrics(asset=event.asset))
         duration = event.duration_seconds
 
@@ -41,29 +46,62 @@ def analyze_events(events: Iterable[Event]) -> PlantReport:
             )
             continue
 
-        if event.state != "planned_stop":
+        _extend_horizon(horizons, event)
+        effective_duration = (
+            calendar.overlap_seconds(event.asset, event.start, event.end)
+            if calendar
+            else duration
+        )
+
+        if event.state == "planned_stop":
+            if calendar:
+                planned_stop_seconds[event.asset] = (
+                    planned_stop_seconds.get(event.asset, 0.0) + effective_duration
+                )
+            continue
+
+        if not calendar:
             metrics.planned_seconds += duration
+        elif effective_duration <= 0:
+            continue
+        else:
+            covered_seconds[event.asset] = covered_seconds.get(event.asset, 0.0) + effective_duration
+
+        factor = effective_duration / duration
 
         if event.state == "running":
-            metrics.runtime_seconds += duration
-            metrics.good_count += event.good_count
-            metrics.scrap_count += event.scrap_count
+            metrics.runtime_seconds += effective_duration
+            good_count = round(event.good_count * factor)
+            scrap_count = round(event.scrap_count * factor)
+            metrics.good_count += good_count
+            metrics.scrap_count += scrap_count
             if event.ideal_cycle_seconds and event.total_count > 0:
-                ideal_runtime = event.ideal_cycle_seconds * event.total_count
-                metrics.speed_loss_seconds += max(0.0, duration - ideal_runtime)
-                metrics.quality_loss_seconds += event.ideal_cycle_seconds * event.scrap_count
-        elif event.state != "planned_stop":
-            metrics.downtime_seconds += duration
+                ideal_runtime = event.ideal_cycle_seconds * (good_count + scrap_count)
+                metrics.speed_loss_seconds += max(0.0, effective_duration - ideal_runtime)
+                metrics.quality_loss_seconds += event.ideal_cycle_seconds * scrap_count
+        else:
+            metrics.downtime_seconds += effective_duration
             reason = event.reason or event.state
             metrics.downtime_by_reason[reason] = (
-                metrics.downtime_by_reason.get(reason, 0.0) + duration
+                metrics.downtime_by_reason.get(reason, 0.0) + effective_duration
             )
+
+    if calendar:
+        _apply_calendar_planned_time(
+            by_asset=by_asset,
+            horizons=horizons,
+            planned_stop_seconds=planned_stop_seconds,
+            covered_seconds=covered_seconds,
+            calendar=calendar,
+            warnings=warnings,
+        )
 
     return PlantReport(assets=sorted(by_asset.values(), key=lambda item: item.asset), warnings=warnings)
 
 
-def analyze_csv(path: str | Path) -> PlantReport:
-    return analyze_events(read_events(path))
+def analyze_csv(path: str | Path, calendar_path: str | Path | None = None) -> PlantReport:
+    calendar = read_shift_calendar(calendar_path) if calendar_path else None
+    return analyze_events(read_events(path), calendar=calendar)
 
 
 def render_markdown(report: PlantReport) -> str:
@@ -197,6 +235,45 @@ def _event_from_row(row: dict[str, str], line_num: int) -> Event:
         ),
     )
     return event
+
+
+def _extend_horizon(horizons: dict[str, list[datetime]], event: Event) -> None:
+    if event.asset not in horizons:
+        horizons[event.asset] = [event.start, event.end]
+        return
+    horizons[event.asset][0] = min(horizons[event.asset][0], event.start)
+    horizons[event.asset][1] = max(horizons[event.asset][1], event.end)
+
+
+def _apply_calendar_planned_time(
+    by_asset: dict[str, AssetMetrics],
+    horizons: dict[str, list[datetime]],
+    planned_stop_seconds: dict[str, float],
+    covered_seconds: dict[str, float],
+    calendar: ShiftCalendar,
+    warnings: list[str],
+) -> None:
+    for asset, metrics in by_asset.items():
+        if asset not in horizons:
+            continue
+
+        start, end = horizons[asset]
+        calendar_seconds = calendar.planned_seconds(asset, start, end)
+        planned_seconds = max(
+            0.0,
+            calendar_seconds - planned_stop_seconds.get(asset, 0.0),
+        )
+        metrics.planned_seconds = planned_seconds
+
+        gap_seconds = max(0.0, planned_seconds - covered_seconds.get(asset, 0.0))
+        if gap_seconds > 0:
+            metrics.downtime_seconds += gap_seconds
+            metrics.downtime_by_reason["unclassified calendar gap"] = (
+                metrics.downtime_by_reason.get("unclassified calendar gap", 0.0) + gap_seconds
+            )
+            warnings.append(
+                f"Added {gap_seconds / 60:.1f} minutes of unclassified calendar gap for {asset}."
+            )
 
 
 def _required(row: dict[str, str], key: str, line_num: int) -> str:

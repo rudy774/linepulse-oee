@@ -15,7 +15,7 @@ LinePulse OEE expects CSV input with the following columns.
 
 ## Metric Definitions
 
-Planned production time excludes `planned_stop` intervals.
+Planned production time excludes `planned_stop` intervals. When a shift calendar is supplied with `--calendar`, planned production time is derived from the calendar windows and planned breaks instead. See [shift-calendars.md](shift-calendars.md).
 
 Availability:
 
@@ -58,4 +58,3 @@ Where:
 - Timestamps may include timezone offsets, but all rows in one file should use a consistent convention.
 - Unknown states are rejected so data quality problems surface early.
 - Performance is not capped at 100 percent. Values above 100 percent are useful signals that the ideal cycle time or counts may need review.
-
