@@ -3,7 +3,12 @@ from __future__ import annotations
 import io
 import unittest
 
-from linepulse_oee.analyze import analyze_events, read_events, render_markdown
+from linepulse_oee.analyze import (
+    analyze_events,
+    read_events,
+    render_markdown,
+    render_pareto_table,
+)
 
 
 class AnalyzeEventsTests(unittest.TestCase):
@@ -46,7 +51,24 @@ Welder-2,2026-06-01T06:00:00,2026-06-01T07:00:00,downtime,fixtures,0,0,8
         self.assertIn("**Welder-2**", markdown)
         self.assertIn("top downtime: fixtures", markdown)
 
+    def test_builds_downtime_pareto_across_assets(self) -> None:
+        csv_text = """asset,start,end,state,reason,good_count,scrap_count,ideal_cycle_seconds
+Press-1,2026-06-01T06:00:00,2026-06-01T06:30:00,downtime,material jam,0,0,4
+Press-1,2026-06-01T06:30:00,2026-06-01T06:45:00,downtime,changeover,0,0,4
+Welder-2,2026-06-01T06:00:00,2026-06-01T06:20:00,downtime,material jam,0,0,8
+Welder-2,2026-06-01T06:20:00,2026-06-01T06:30:00,idle,waiting on fixtures,0,0,8
+"""
+        report = analyze_events(read_events(io.StringIO(csv_text)))
+
+        pareto = report.downtime_pareto
+        self.assertEqual([item.reason for item in pareto], ["material jam", "changeover", "waiting on fixtures"])
+        self.assertEqual(pareto[0].seconds, 3000)
+        self.assertAlmostEqual(pareto[0].percent_of_downtime, 3000 / 4500)
+        self.assertAlmostEqual(pareto[-1].cumulative_percent, 1.0)
+        self.assertEqual(pareto[0].assets, ("Press-1", "Welder-2"))
+        self.assertIn("Downtime Pareto", render_markdown(report))
+        self.assertIn("material jam", render_pareto_table(report))
+
 
 if __name__ == "__main__":
     unittest.main()
-

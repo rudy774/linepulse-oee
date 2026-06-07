@@ -7,6 +7,7 @@ The first release focuses on three things:
 - compute asset-level availability, performance, quality, and OEE
 - rank bottlenecks by lost production time
 - produce machine-readable JSON and human-readable Markdown reports from a simple CSV
+- identify the largest downtime reasons with a plant-level Pareto table
 
 ## Why this exists
 
@@ -63,6 +64,12 @@ Analyze a file and print a compact summary:
 linepulse analyze examples/machine_events.csv
 ```
 
+Print the downtime Pareto table too:
+
+```powershell
+linepulse analyze examples/machine_events.csv --pareto
+```
+
 Write JSON and Markdown reports:
 
 ```powershell
@@ -76,6 +83,8 @@ Asset      OEE    Availability  Performance  Quality  Lost hours
 Press-1    71.8%  83.3%         87.9%        98.0%    0.65
 Welder-2   64.4%  76.9%         86.3%        97.0%    0.93
 ```
+
+Markdown and JSON reports include a `Downtime Pareto` section that ranks downtime reasons by lost hours, share of downtime, cumulative share, and affected assets.
 
 ## Roadmap
 
@@ -93,4 +102,3 @@ Contributions are welcome, especially sample schemas from real manufacturing sys
 ## License
 
 MIT License. See [LICENSE](LICENSE).
-

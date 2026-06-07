@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import csv
-from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
 from typing import Iterable, TextIO
@@ -100,6 +99,27 @@ def render_markdown(report: PlantReport) -> str:
             + (f" (top downtime: {top_reason})" if top_reason else "")
         )
 
+    if report.downtime_pareto:
+        lines.extend(
+            [
+                "",
+                "## Downtime Pareto",
+                "",
+                "| Reason | Lost Hours | Share | Cumulative | Assets |",
+                "| --- | ---: | ---: | ---: | --- |",
+            ]
+        )
+        for item in report.downtime_pareto:
+            lines.append(
+                "| {reason} | {hours:.2f} | {share} | {cumulative} | {assets} |".format(
+                    reason=item.reason,
+                    hours=item.seconds / 3600,
+                    share=_percent(item.percent_of_downtime),
+                    cumulative=_percent(item.cumulative_percent),
+                    assets=", ".join(item.assets),
+                )
+            )
+
     if report.warnings:
         lines.extend(["", "## Warnings", ""])
         lines.extend(f"- {warning}" for warning in report.warnings)
@@ -127,6 +147,26 @@ def render_text_table(report: PlantReport) -> str:
                 _percent(asset.performance),
                 _percent(asset.quality),
                 f"{asset.lost_seconds / 3600:.2f}",
+            ]
+        )
+
+    widths = [max(len(row[column]) for row in rows) for column in range(len(rows[0]))]
+    return "\n".join(
+        "  ".join(value.ljust(widths[index]) for index, value in enumerate(row))
+        for row in rows
+    )
+
+
+def render_pareto_table(report: PlantReport) -> str:
+    rows = [["Reason", "Lost hours", "Share", "Cumulative", "Assets"]]
+    for item in report.downtime_pareto:
+        rows.append(
+            [
+                item.reason,
+                f"{item.seconds / 3600:.2f}",
+                _percent(item.percent_of_downtime),
+                _percent(item.cumulative_percent),
+                ", ".join(item.assets),
             ]
         )
 
@@ -206,4 +246,3 @@ def _top_reason(reasons: dict[str, float]) -> str:
         return ""
     reason, seconds = max(reasons.items(), key=lambda item: item[1])
     return f"{reason}, {seconds / 60:.0f} min"
-

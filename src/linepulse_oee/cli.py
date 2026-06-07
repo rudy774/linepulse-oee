@@ -4,7 +4,7 @@ import argparse
 import json
 from pathlib import Path
 
-from .analyze import analyze_csv, render_markdown, render_text_table
+from .analyze import analyze_csv, render_markdown, render_pareto_table, render_text_table
 
 
 TEMPLATE = """asset,start,end,state,reason,good_count,scrap_count,ideal_cycle_seconds
@@ -24,6 +24,11 @@ def build_parser() -> argparse.ArgumentParser:
     analyze.add_argument("csv_path", type=Path, help="Path to a machine event CSV.")
     analyze.add_argument("--json", type=Path, help="Write full report JSON to this path.")
     analyze.add_argument("--markdown", type=Path, help="Write Markdown report to this path.")
+    analyze.add_argument(
+        "--pareto",
+        action="store_true",
+        help="Print a downtime reason Pareto table after the asset summary.",
+    )
 
     subparsers.add_parser("template", help="Print a starter CSV template.")
     return parser
@@ -39,6 +44,9 @@ def main(argv: list[str] | None = None) -> int:
 
     report = analyze_csv(args.csv_path)
     print(render_text_table(report))
+    if args.pareto and report.downtime_pareto:
+        print()
+        print(render_pareto_table(report))
 
     if args.json:
         _write_text(args.json, json.dumps(report.as_dict(), indent=2) + "\n")
@@ -55,4 +63,3 @@ def _write_text(path: Path, content: str) -> None:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
