@@ -27,6 +27,11 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         help="Optional JSON shift calendar for deriving planned production time.",
     )
+    analyze.add_argument(
+        "--reason-map",
+        type=Path,
+        help="Optional JSON reason-code map for grouping downtime reason aliases.",
+    )
     analyze.add_argument("--json", type=Path, help="Write full report JSON to this path.")
     analyze.add_argument("--markdown", type=Path, help="Write Markdown report to this path.")
     analyze.add_argument(
@@ -47,11 +52,21 @@ def main(argv: list[str] | None = None) -> int:
         print(TEMPLATE, end="")
         return 0
 
-    report = analyze_csv(args.csv_path, calendar_path=args.calendar)
+    report = analyze_csv(
+        args.csv_path,
+        calendar_path=args.calendar,
+        reason_map_path=args.reason_map,
+    )
     print(render_text_table(report))
     if args.pareto and report.downtime_pareto:
         print()
         print(render_pareto_table(report))
+
+    if report.warnings:
+        print()
+        print("Warnings")
+        for warning in report.warnings:
+            print(f"- {warning}")
 
     if args.json:
         _write_text(args.json, json.dumps(report.as_dict(), indent=2) + "\n")

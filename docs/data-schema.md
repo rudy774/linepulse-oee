@@ -17,6 +17,8 @@ LinePulse OEE expects CSV input with the following columns.
 
 Planned production time excludes `planned_stop` intervals. When a shift calendar is supplied with `--calendar`, planned production time is derived from the calendar windows and planned breaks instead. See [shift-calendars.md](shift-calendars.md).
 
+Downtime reasons can be normalized with `--reason-map`. See [reason-codes.md](reason-codes.md).
+
 Availability:
 
 ```text

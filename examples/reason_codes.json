@@ -1,0 +1,40 @@
+{
+  "warn_unmapped": true,
+  "categories": [
+    {
+      "canonical": "material jam",
+      "aliases": [
+        "jam",
+        "material jam",
+        "material_jam",
+        "material-jam"
+      ]
+    },
+    {
+      "canonical": "changeover",
+      "aliases": [
+        "die change",
+        "model change",
+        "change over",
+        "changeover"
+      ]
+    },
+    {
+      "canonical": "waiting on fixtures",
+      "aliases": [
+        "fixture wait",
+        "waiting fixtures",
+        "waiting on fixtures"
+      ]
+    },
+    {
+      "canonical": "maintenance",
+      "aliases": [
+        "maintenance",
+        "planned maintenance",
+        "pm"
+      ]
+    }
+  ]
+}
+

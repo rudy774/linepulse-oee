@@ -6,6 +6,9 @@
 - Planned production time can now be derived from shifts and breaks.
 - `planned_stop` rows still subtract from calendar-derived planned time.
 - Missing event coverage inside a planned calendar window is reported as `unclassified calendar gap` downtime.
+- Added optional reason-code normalization with `linepulse analyze --reason-map`.
+- Downtime aliases can now be grouped into canonical categories before Pareto reporting.
+- Unmapped reasons are reported as warnings when a reason map is supplied.
 
 ## v0.1.0 - 2026-06-07
 

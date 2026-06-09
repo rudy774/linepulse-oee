@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Iterable, TextIO
 
 from .model import VALID_STATES, AssetMetrics, Event, PlantReport
+from .reason_codes import ReasonCodeMap, read_reason_code_map
 from .shift_calendar import ShiftCalendar, read_shift_calendar
 
 
@@ -28,12 +29,17 @@ def read_events(source: str | Path | TextIO) -> list[Event]:
     return events
 
 
-def analyze_events(events: Iterable[Event], calendar: ShiftCalendar | None = None) -> PlantReport:
+def analyze_events(
+    events: Iterable[Event],
+    calendar: ShiftCalendar | None = None,
+    reason_map: ReasonCodeMap | None = None,
+) -> PlantReport:
     events = sorted(events, key=lambda item: (item.asset, item.start, item.end))
     by_asset: dict[str, AssetMetrics] = {}
     horizons: dict[str, list[datetime]] = {}
     planned_stop_seconds: dict[str, float] = {}
     covered_seconds: dict[str, float] = {}
+    unmapped_reasons: set[str] = set()
     warnings: list[str] = []
 
     for event in events:
@@ -81,7 +87,7 @@ def analyze_events(events: Iterable[Event], calendar: ShiftCalendar | None = Non
                 metrics.quality_loss_seconds += event.ideal_cycle_seconds * scrap_count
         else:
             metrics.downtime_seconds += effective_duration
-            reason = event.reason or event.state
+            reason = _normalize_reason(event.reason or event.state, reason_map, unmapped_reasons)
             metrics.downtime_by_reason[reason] = (
                 metrics.downtime_by_reason.get(reason, 0.0) + effective_duration
             )
@@ -96,12 +102,21 @@ def analyze_events(events: Iterable[Event], calendar: ShiftCalendar | None = Non
             warnings=warnings,
         )
 
+    if reason_map and reason_map.warn_unmapped:
+        for reason in sorted(unmapped_reasons):
+            warnings.append(f"Reason {reason!r} was not mapped; used as-is.")
+
     return PlantReport(assets=sorted(by_asset.values(), key=lambda item: item.asset), warnings=warnings)
 
 
-def analyze_csv(path: str | Path, calendar_path: str | Path | None = None) -> PlantReport:
+def analyze_csv(
+    path: str | Path,
+    calendar_path: str | Path | None = None,
+    reason_map_path: str | Path | None = None,
+) -> PlantReport:
     calendar = read_shift_calendar(calendar_path) if calendar_path else None
-    return analyze_events(read_events(path), calendar=calendar)
+    reason_map = read_reason_code_map(reason_map_path) if reason_map_path else None
+    return analyze_events(read_events(path), calendar=calendar, reason_map=reason_map)
 
 
 def render_markdown(report: PlantReport) -> str:
@@ -235,6 +250,20 @@ def _event_from_row(row: dict[str, str], line_num: int) -> Event:
         ),
     )
     return event
+
+
+def _normalize_reason(
+    reason: str,
+    reason_map: ReasonCodeMap | None,
+    unmapped_reasons: set[str],
+) -> str:
+    if not reason_map:
+        return reason
+
+    normalized, matched = reason_map.normalize(reason)
+    if not matched:
+        unmapped_reasons.add(normalized)
+    return normalized
 
 
 def _extend_horizon(horizons: dict[str, list[datetime]], event: Event) -> None:

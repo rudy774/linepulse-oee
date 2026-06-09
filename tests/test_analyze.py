@@ -9,6 +9,7 @@ from linepulse_oee.analyze import (
     render_markdown,
     render_pareto_table,
 )
+from linepulse_oee.reason_codes import read_reason_code_map
 from linepulse_oee.shift_calendar import read_shift_calendar
 
 
@@ -144,6 +145,52 @@ Press-1,2026-06-01T07:50:00,2026-06-01T08:00:00,downtime,maintenance,0,0,60
         self.assertEqual(asset.downtime_by_reason["maintenance"], 600)
         self.assertEqual(asset.downtime_by_reason["unclassified calendar gap"], 3000)
         self.assertIn("unclassified calendar gap", report.warnings[0])
+
+    def test_reason_code_map_groups_aliases_and_warns_on_unmapped_reasons(self) -> None:
+        csv_text = """asset,start,end,state,reason,good_count,scrap_count,ideal_cycle_seconds
+Press-1,2026-06-01T06:00:00,2026-06-01T06:15:00,downtime,Jam,0,0,4
+Press-1,2026-06-01T06:15:00,2026-06-01T06:30:00,downtime,material_jam,0,0,4
+Press-1,2026-06-01T06:30:00,2026-06-01T06:45:00,downtime,operator check,0,0,4
+Welder-2,2026-06-01T06:00:00,2026-06-01T06:20:00,idle,fixture wait,0,0,8
+"""
+        reason_map = read_reason_code_map(
+            io.StringIO(
+                """{
+  "warn_unmapped": true,
+  "categories": [
+    {"canonical": "material jam", "aliases": ["jam", "material_jam", "material-jam"]},
+    {"canonical": "waiting on fixtures", "aliases": ["fixture wait", "waiting fixtures"]}
+  ]
+}"""
+            )
+        )
+
+        report = analyze_events(read_events(io.StringIO(csv_text)), reason_map=reason_map)
+
+        press = next(asset for asset in report.assets if asset.asset == "Press-1")
+        self.assertEqual(press.downtime_by_reason["material jam"], 1800)
+        self.assertEqual(press.downtime_by_reason["operator check"], 900)
+        self.assertNotIn("Jam", press.downtime_by_reason)
+        self.assertTrue(
+            any("Reason 'operator check' was not mapped" in warning for warning in report.warnings)
+        )
+
+        pareto = report.downtime_pareto
+        self.assertEqual(pareto[0].reason, "material jam")
+        self.assertIn("waiting on fixtures", [item.reason for item in pareto])
+
+    def test_reason_code_map_rejects_conflicting_aliases(self) -> None:
+        with self.assertRaisesRegex(ValueError, "maps to both"):
+            read_reason_code_map(
+                io.StringIO(
+                    """{
+  "categories": [
+    {"canonical": "material jam", "aliases": ["jam"]},
+    {"canonical": "quality hold", "aliases": ["jam"]}
+  ]
+}"""
+                )
+            )
 
 
 if __name__ == "__main__":

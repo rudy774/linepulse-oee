@@ -81,6 +81,12 @@ Use a shift calendar to derive planned production time from scheduled shifts and
 linepulse analyze examples/machine_events.csv --calendar examples/shift_calendar.json --pareto
 ```
 
+Normalize messy downtime reason labels before Pareto reporting:
+
+```powershell
+linepulse analyze examples/machine_events.csv --reason-map examples/reason_codes.json --pareto
+```
+
 Write JSON and Markdown reports:
 
 ```powershell
@@ -98,6 +104,7 @@ Welder-2   64.4%  76.9%         86.3%        97.0%    0.93
 Markdown and JSON reports include a `Downtime Pareto` section that ranks downtime reasons by lost hours, share of downtime, cumulative share, and affected assets.
 
 Shift calendars are documented in [docs/shift-calendars.md](docs/shift-calendars.md).
+Reason-code normalization is documented in [docs/reason-codes.md](docs/reason-codes.md).
 
 ## Sample Report
 
@@ -106,7 +113,6 @@ Shift calendars are documented in [docs/shift-calendars.md](docs/shift-calendars
 ## Roadmap
 
 - takt targets
-- reason-code normalization
 - Pareto charts for downtime reasons
 - notebook examples for continuous improvement reviews
 - adapters for common historian and MES exports
