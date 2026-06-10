@@ -1,0 +1,5 @@
+equipment_path,start_ts,end_ts,state_code,downtime_reason,good_parts,scrap_parts,ideal_cycle_seconds
+Press-1,2026-06-01T06:00:00,2026-06-01T06:45:00,RUNNING,,520,8,4.5
+Press-1,2026-06-01T06:45:00,2026-06-01T07:05:00,FAULT,material jam,0,0,4.5
+Press-1,2026-06-01T07:05:00,2026-06-01T07:20:00,SETUP,die change,0,0,4.5
+Press-1,2026-06-01T07:20:00,2026-06-01T08:00:00,PRODUCTION,,460,5,4.5

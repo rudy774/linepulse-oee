@@ -1,0 +1,4 @@
+asset,down_start,down_end,reason,planned,ideal_cycle_seconds
+Press-1,2026-06-01T08:00:00,2026-06-01T08:15:00,break,yes,4.5
+Press-1,2026-06-01T08:15:00,2026-06-01T08:30:00,material jam,no,4.5
+Welder-2,2026-06-01T08:30:00,2026-06-01T08:50:00,waiting on fixtures,no,8.0

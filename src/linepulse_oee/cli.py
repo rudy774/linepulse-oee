@@ -4,6 +4,7 @@ import argparse
 import json
 from pathlib import Path
 
+from .adapters import adapter_choices, convert_csv, write_canonical_csv
 from .analyze import analyze_csv, render_markdown, render_pareto_table, render_text_table
 
 
@@ -40,6 +41,25 @@ def build_parser() -> argparse.ArgumentParser:
         help="Print a downtime reason Pareto table after the asset summary.",
     )
 
+    convert = subparsers.add_parser(
+        "convert",
+        help="Convert supported historian, MES, or downtime exports to LinePulse CSV.",
+    )
+    convert.add_argument("csv_path", type=Path, help="Path to the source export CSV.")
+    convert.add_argument(
+        "--adapter",
+        required=True,
+        choices=adapter_choices(),
+        help="Source export layout to convert.",
+    )
+    convert.add_argument(
+        "--output",
+        "-o",
+        type=Path,
+        required=True,
+        help="Path for the normalized LinePulse CSV.",
+    )
+
     subparsers.add_parser("template", help="Print a starter CSV template.")
     return parser
 
@@ -50,6 +70,12 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "template":
         print(TEMPLATE, end="")
+        return 0
+
+    if args.command == "convert":
+        rows = convert_csv(args.csv_path, args.adapter)
+        count = write_canonical_csv(rows, args.output)
+        print(f"Wrote {count} normalized rows to {args.output}")
         return 0
 
     report = analyze_csv(

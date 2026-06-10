@@ -19,6 +19,8 @@ Planned production time excludes `planned_stop` intervals. When a shift calendar
 
 Downtime reasons can be normalized with `--reason-map`. See [reason-codes.md](reason-codes.md).
 
+Source exports that do not match this schema can be converted with `linepulse convert`. See [adapters.md](adapters.md).
+
 Availability:
 
 ```text

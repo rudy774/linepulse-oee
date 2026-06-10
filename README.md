@@ -7,12 +7,13 @@
 
 LinePulse OEE is a small open-source toolkit for turning manufacturing event logs into practical OEE, downtime, and bottleneck reports. It is designed for teams that have CSV exports from PLCs, historians, MES systems, or manual downtime logs, but do not yet have a clean analytics layer.
 
-The first release focuses on three things:
+The current toolkit focuses on:
 
 - compute asset-level availability, performance, quality, and OEE
 - rank bottlenecks by lost production time
 - produce machine-readable JSON and human-readable Markdown reports from a simple CSV
 - identify the largest downtime reasons with a plant-level Pareto table
+- convert starter historian, MES, and manual downtime exports into the LinePulse CSV schema
 
 ## Why this exists
 
@@ -63,6 +64,12 @@ Create a starter CSV:
 linepulse template > machine_events.csv
 ```
 
+Convert a supported source export into LinePulse's event schema:
+
+```powershell
+linepulse convert examples/adapters/ignition_historian_export.csv --adapter ignition-historian --output reports/ignition_events.csv
+```
+
 Analyze a file and print a compact summary:
 
 ```powershell
@@ -105,6 +112,7 @@ Markdown and JSON reports include a `Downtime Pareto` section that ranks downtim
 
 Shift calendars are documented in [docs/shift-calendars.md](docs/shift-calendars.md).
 Reason-code normalization is documented in [docs/reason-codes.md](docs/reason-codes.md).
+Adapter examples are documented in [docs/adapters.md](docs/adapters.md).
 
 ## Sample Report
 
@@ -115,7 +123,7 @@ Reason-code normalization is documented in [docs/reason-codes.md](docs/reason-co
 - takt targets
 - Pareto charts for downtime reasons
 - notebook examples for continuous improvement reviews
-- adapters for common historian and MES exports
+- more real-world adapter fixtures for common historian and MES exports
 - optional web dashboard for non-technical users
 
 ## Contributing

@@ -1,0 +1,5 @@
+work_center,started_at,finished_at,event_type,reason_code,good_qty,reject_qty,target_cycle_seconds
+Welder-2,2026-06-01T06:00:00,2026-06-01T06:30:00,PRODUCTION_RUN,,180,3,8.0
+Welder-2,2026-06-01T06:30:00,2026-06-01T06:50:00,IDLE,waiting on fixtures,0,0,8.0
+Welder-2,2026-06-01T06:50:00,2026-06-01T07:50:00,PRODUCTION_RUN,,410,10,8.0
+Welder-2,2026-06-01T07:50:00,2026-06-01T08:10:00,CHANGEOVER,model change,0,0,8.0

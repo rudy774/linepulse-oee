@@ -9,6 +9,7 @@
 - Added optional reason-code normalization with `linepulse analyze --reason-map`.
 - Downtime aliases can now be grouped into canonical categories before Pareto reporting.
 - Unmapped reasons are reported as warnings when a reason map is supplied.
+- Added `linepulse convert` adapter examples for Ignition historian exports, MES production logs, and manual downtime spreadsheets.
 
 ## v0.1.0 - 2026-06-07
 
