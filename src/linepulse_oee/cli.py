@@ -6,6 +6,7 @@ from pathlib import Path
 
 from .adapters import adapter_choices, convert_csv, write_canonical_csv
 from .analyze import analyze_csv, render_markdown, render_pareto_table, render_text_table
+from .charts import render_pareto_svg
 
 
 TEMPLATE = """asset,start,end,state,reason,good_count,scrap_count,ideal_cycle_seconds
@@ -35,6 +36,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     analyze.add_argument("--json", type=Path, help="Write full report JSON to this path.")
     analyze.add_argument("--markdown", type=Path, help="Write Markdown report to this path.")
+    analyze.add_argument("--pareto-svg", type=Path, help="Write a downtime Pareto SVG chart to this path.")
     analyze.add_argument(
         "--pareto",
         action="store_true",
@@ -98,6 +100,8 @@ def main(argv: list[str] | None = None) -> int:
         _write_text(args.json, json.dumps(report.as_dict(), indent=2) + "\n")
     if args.markdown:
         _write_text(args.markdown, render_markdown(report))
+    if args.pareto_svg:
+        _write_text(args.pareto_svg, render_pareto_svg(report))
 
     return 0
 

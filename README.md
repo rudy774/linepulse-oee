@@ -13,6 +13,7 @@ The current toolkit focuses on:
 - rank bottlenecks by lost production time
 - produce machine-readable JSON and human-readable Markdown reports from a simple CSV
 - identify the largest downtime reasons with a plant-level Pareto table
+- generate a visual downtime Pareto chart as SVG
 - convert starter historian, MES, and manual downtime exports into the LinePulse CSV schema
 
 ## Why this exists
@@ -100,6 +101,12 @@ Write JSON and Markdown reports:
 linepulse analyze examples/machine_events.csv --json reports/oee.json --markdown reports/oee.md
 ```
 
+Generate a visual downtime Pareto chart:
+
+```powershell
+linepulse analyze examples/machine_events.csv --pareto-svg reports/pareto.svg
+```
+
 ## Example Output
 
 ```text
@@ -113,15 +120,20 @@ Markdown and JSON reports include a `Downtime Pareto` section that ranks downtim
 Shift calendars are documented in [docs/shift-calendars.md](docs/shift-calendars.md).
 Reason-code normalization is documented in [docs/reason-codes.md](docs/reason-codes.md).
 Adapter examples are documented in [docs/adapters.md](docs/adapters.md).
+Pareto charts are documented in [docs/pareto-charts.md](docs/pareto-charts.md).
+Manufacturing design principles are documented in [docs/manufacturing-design-principles.md](docs/manufacturing-design-principles.md).
 
 ## Sample Report
 
 ![LinePulse OEE sample report](docs/assets/sample-report.svg)
 
+## Sample Pareto Chart
+
+![LinePulse OEE Pareto chart](docs/assets/pareto-chart.svg)
+
 ## Roadmap
 
 - takt targets
-- Pareto charts for downtime reasons
 - notebook examples for continuous improvement reviews
 - more real-world adapter fixtures for common historian and MES exports
 - optional web dashboard for non-technical users

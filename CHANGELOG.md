@@ -10,6 +10,7 @@
 - Downtime aliases can now be grouped into canonical categories before Pareto reporting.
 - Unmapped reasons are reported as warnings when a reason map is supplied.
 - Added `linepulse convert` adapter examples for Ignition historian exports, MES production logs, and manual downtime spreadsheets.
+- Added dependency-free SVG downtime Pareto charts with `linepulse analyze --pareto-svg`.
 
 ## v0.1.0 - 2026-06-07
 
