@@ -7,6 +7,12 @@ from pathlib import Path
 from .adapters import adapter_choices, convert_csv, write_canonical_csv
 from .analyze import analyze_csv, render_markdown, render_pareto_table, render_text_table
 from .charts import render_pareto_svg
+from .validation import (
+    ValidationIssue,
+    has_errors,
+    render_validation_issues,
+    validate_events,
+)
 
 
 TEMPLATE = """asset,start,end,state,reason,good_count,scrap_count,ideal_cycle_seconds
@@ -62,6 +68,15 @@ def build_parser() -> argparse.ArgumentParser:
         help="Path for the normalized LinePulse CSV.",
     )
 
+    validate = subparsers.add_parser("validate", help="Validate a LinePulse machine event CSV.")
+    validate.add_argument("csv_path", type=Path, help="Path to a machine event CSV.")
+    validate.add_argument(
+        "--no-gap-warnings",
+        action="store_true",
+        help="Do not warn when an asset timeline has a gap between rows.",
+    )
+    validate.add_argument("--json", type=Path, help="Write validation issues as JSON.")
+
     subparsers.add_parser("template", help="Print a starter CSV template.")
     return parser
 
@@ -79,6 +94,24 @@ def main(argv: list[str] | None = None) -> int:
         count = write_canonical_csv(rows, args.output)
         print(f"Wrote {count} normalized rows to {args.output}")
         return 0
+
+    if args.command == "validate":
+        try:
+            from .analyze import read_events
+
+            events = read_events(args.csv_path)
+            issues = validate_events(events, warn_gaps=not args.no_gap_warnings)
+        except ValueError as exc:
+            issues = [ValidationIssue("error", "parse_error", str(exc))]
+
+        print(render_validation_issues(issues))
+        if args.json:
+            payload = {
+                "ok": not has_errors(issues),
+                "issues": [issue.as_dict() for issue in issues],
+            }
+            _write_text(args.json, json.dumps(payload, indent=2) + "\n")
+        return 1 if has_errors(issues) else 0
 
     report = analyze_csv(
         args.csv_path,

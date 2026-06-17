@@ -21,6 +21,8 @@ Downtime reasons can be normalized with `--reason-map`. See [reason-codes.md](re
 
 Source exports that do not match this schema can be converted with `linepulse convert`. See [adapters.md](adapters.md).
 
+CSV event quality can be checked with `linepulse validate`. See [validation.md](validation.md).
+
 Availability:
 
 ```text

@@ -15,6 +15,7 @@ The current toolkit focuses on:
 - identify the largest downtime reasons with a plant-level Pareto table
 - generate a visual downtime Pareto chart as SVG
 - convert starter historian, MES, and manual downtime exports into the LinePulse CSV schema
+- validate event CSVs for overlapping intervals, timeline gaps, missing reasons, and count issues
 
 ## Why this exists
 
@@ -71,6 +72,12 @@ Convert a supported source export into LinePulse's event schema:
 linepulse convert examples/adapters/ignition_historian_export.csv --adapter ignition-historian --output reports/ignition_events.csv
 ```
 
+Validate a machine event CSV before analysis:
+
+```powershell
+linepulse validate examples/machine_events.csv
+```
+
 Analyze a file and print a compact summary:
 
 ```powershell
@@ -121,6 +128,7 @@ Shift calendars are documented in [docs/shift-calendars.md](docs/shift-calendars
 Reason-code normalization is documented in [docs/reason-codes.md](docs/reason-codes.md).
 Adapter examples are documented in [docs/adapters.md](docs/adapters.md).
 Pareto charts are documented in [docs/pareto-charts.md](docs/pareto-charts.md).
+CSV validation is documented in [docs/validation.md](docs/validation.md).
 Manufacturing design principles are documented in [docs/manufacturing-design-principles.md](docs/manufacturing-design-principles.md).
 
 ## Sample Report
@@ -135,6 +143,7 @@ Manufacturing design principles are documented in [docs/manufacturing-design-pri
 
 - takt targets
 - notebook examples for continuous improvement reviews
+- run and shift context improvements
 - more real-world adapter fixtures for common historian and MES exports
 - optional web dashboard for non-technical users
 

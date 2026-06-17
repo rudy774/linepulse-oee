@@ -8,6 +8,7 @@ from typing import Iterable, TextIO
 from .model import VALID_STATES, AssetMetrics, Event, PlantReport
 from .reason_codes import ReasonCodeMap, read_reason_code_map
 from .shift_calendar import ShiftCalendar, read_shift_calendar
+from .validation import format_validation_warning, require_event_columns, validate_events
 
 
 def read_events(source: str | Path | TextIO) -> list[Event]:
@@ -21,6 +22,7 @@ def read_events(source: str | Path | TextIO) -> list[Event]:
 
     try:
         reader = csv.DictReader(handle)
+        require_event_columns(reader.fieldnames)
         events = [_event_from_row(row, reader.line_num) for row in reader]
     finally:
         if close_after:
@@ -116,7 +118,11 @@ def analyze_csv(
 ) -> PlantReport:
     calendar = read_shift_calendar(calendar_path) if calendar_path else None
     reason_map = read_reason_code_map(reason_map_path) if reason_map_path else None
-    return analyze_events(read_events(path), calendar=calendar, reason_map=reason_map)
+    events = read_events(path)
+    validation_issues = validate_events(events, warn_gaps=False)
+    report = analyze_events(events, calendar=calendar, reason_map=reason_map)
+    report.warnings[:0] = [format_validation_warning(issue) for issue in validation_issues]
+    return report
 
 
 def render_markdown(report: PlantReport) -> str:
