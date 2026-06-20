@@ -23,6 +23,8 @@ Source exports that do not match this schema can be converted with `linepulse co
 
 CSV event quality can be checked with `linepulse validate`. See [validation.md](validation.md).
 
+Reports include deterministic improvement recommendations in JSON and Markdown output. See [recommendations.md](recommendations.md).
+
 Availability:
 
 ```text

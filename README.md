@@ -14,6 +14,7 @@ The current toolkit focuses on:
 - produce machine-readable JSON and human-readable Markdown reports from a simple CSV
 - identify the largest downtime reasons with a plant-level Pareto table
 - generate a visual downtime Pareto chart as SVG
+- recommend the first improvement questions to investigate
 - convert starter historian, MES, and manual downtime exports into the LinePulse CSV schema
 - validate event CSVs for overlapping intervals, timeline gaps, missing reasons, and count issues
 
@@ -123,12 +124,14 @@ Welder-2   64.4%  76.9%         86.3%        97.0%    0.93
 ```
 
 Markdown and JSON reports include a `Downtime Pareto` section that ranks downtime reasons by lost hours, share of downtime, cumulative share, and affected assets.
+Reports also include `Recommendations` that call out the top constrained asset, dominant downtime reason, data-quality caveats, and first investigation step.
 
 Shift calendars are documented in [docs/shift-calendars.md](docs/shift-calendars.md).
 Reason-code normalization is documented in [docs/reason-codes.md](docs/reason-codes.md).
 Adapter examples are documented in [docs/adapters.md](docs/adapters.md).
 Pareto charts are documented in [docs/pareto-charts.md](docs/pareto-charts.md).
 CSV validation is documented in [docs/validation.md](docs/validation.md).
+Report recommendations are documented in [docs/recommendations.md](docs/recommendations.md).
 Manufacturing design principles are documented in [docs/manufacturing-design-principles.md](docs/manufacturing-design-principles.md).
 
 ## Sample Report
@@ -141,11 +144,16 @@ Manufacturing design principles are documented in [docs/manufacturing-design-pri
 
 ## Roadmap
 
-- takt targets
-- notebook examples for continuous improvement reviews
-- run and shift context improvements
-- more real-world adapter fixtures for common historian and MES exports
-- optional web dashboard for non-technical users
+LinePulse is moving from CSV OEE reports toward an evidence-to-decision workflow for small manufacturers and integrators.
+
+- run, product, and work-order context
+- count-delta imports with reset and rollover checks
+- defect and scrap classification
+- report lineage and source metadata
+- more real-world adapter fixtures
+- TEEP and capacity-utilization reporting
+
+See [docs/roadmap.md](docs/roadmap.md) for the full roadmap.
 
 ## Contributing
 

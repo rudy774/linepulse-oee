@@ -8,6 +8,7 @@ from linepulse_oee.analyze import (
     read_events,
     render_markdown,
     render_pareto_table,
+    render_recommendations,
 )
 from linepulse_oee.reason_codes import read_reason_code_map
 from linepulse_oee.shift_calendar import read_shift_calendar
@@ -70,6 +71,32 @@ Welder-2,2026-06-01T06:20:00,2026-06-01T06:30:00,idle,waiting on fixtures,0,0,8
         self.assertEqual(pareto[0].assets, ("Press-1", "Welder-2"))
         self.assertIn("Downtime Pareto", render_markdown(report))
         self.assertIn("material jam", render_pareto_table(report))
+
+    def test_report_recommendations_prioritize_constraint_and_downtime_reason(self) -> None:
+        csv_text = """asset,start,end,state,reason,good_count,scrap_count,ideal_cycle_seconds
+Press-1,2026-06-01T06:00:00,2026-06-01T07:00:00,running,,720,0,4
+Welder-2,2026-06-01T06:00:00,2026-06-01T07:00:00,downtime,fixtures,0,0,8
+"""
+        report = analyze_events(read_events(io.StringIO(csv_text)))
+
+        recommendations = report.recommendations
+        self.assertEqual(recommendations[0].category, "constraint")
+        self.assertIn("Welder-2", recommendations[0].title)
+        self.assertTrue(any(item.category == "downtime" for item in recommendations))
+        self.assertIn("Recommendations", render_markdown(report))
+        self.assertIn("Start with Welder-2", render_recommendations(report))
+        self.assertIn("recommendations", report.as_dict())
+
+    def test_report_recommendations_call_out_quality_loss(self) -> None:
+        csv_text = """asset,start,end,state,reason,good_count,scrap_count,ideal_cycle_seconds
+Press-1,2026-06-01T06:00:00,2026-06-01T07:00:00,running,,60,40,30
+"""
+        report = analyze_events(read_events(io.StringIO(csv_text)))
+
+        self.assertTrue(any(item.category == "quality" for item in report.recommendations))
+        quality = next(item for item in report.recommendations if item.category == "quality")
+        self.assertIn("Classify scrap", quality.title)
+        self.assertTrue(quality.next_steps)
 
     def test_shift_calendar_derives_planned_time_and_excludes_breaks(self) -> None:
         csv_text = """asset,start,end,state,reason,good_count,scrap_count,ideal_cycle_seconds

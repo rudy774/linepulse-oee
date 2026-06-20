@@ -47,8 +47,16 @@ Reports should preserve enough context for someone to trust and reproduce the re
 
 LinePulse should favor transparent files and deterministic calculations over hidden spreadsheet logic.
 
+## Decision-First Reports
+
+A report should help a real person choose the next useful question.
+
+Tables and charts are not the finish line. When the evidence is strong enough, reports should point to the top constrained asset, the dominant downtime reason, the likely loss family, and the data-quality issues that could change the conclusion.
+
+Recommendations should stay grounded in report evidence. They should not claim root cause unless the input data actually contains root-cause evidence.
+
 ## Practical Plant Adoption
 
 Build the evidence and workflow before the screen.
 
-Small manufacturers need tools that can start with CSV exports, Ignition/MES/historian samples, and simple review reports. As the project matures, it should grow toward run-level OEE, stronger validation, adapter contracts, and optional UNS/MQTT/cloud outputs without making the first workflow heavy.
+Small manufacturers need tools that can start with CSV exports, historian/MES samples, and simple review reports. As the project matures, it should grow toward run-level OEE, stronger validation, adapter contracts, and optional event-stream or cloud outputs without making the first workflow heavy.

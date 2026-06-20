@@ -3,7 +3,7 @@
 from .adapters import AdapterSpec, available_adapters, convert_csv, write_canonical_csv
 from .analyze import analyze_events
 from .charts import render_pareto_svg
-from .model import AssetMetrics, Event, PlantReport
+from .model import AssetMetrics, Event, PlantReport, ReportRecommendation
 from .reason_codes import ReasonCodeMap, read_reason_code_map
 from .shift_calendar import ShiftCalendar, read_shift_calendar
 from .validation import ValidationIssue, validate_events
@@ -13,6 +13,7 @@ __all__ = [
     "AssetMetrics",
     "Event",
     "PlantReport",
+    "ReportRecommendation",
     "ReasonCodeMap",
     "ShiftCalendar",
     "ValidationIssue",

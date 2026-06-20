@@ -12,6 +12,7 @@
 - Added `linepulse convert` adapter examples for Ignition historian exports, MES production logs, and manual downtime spreadsheets.
 - Added dependency-free SVG downtime Pareto charts with `linepulse analyze --pareto-svg`.
 - Added `linepulse validate` for event CSV data-quality checks.
+- Added report recommendations in CLI, Markdown, and JSON output.
 
 ## v0.1.0 - 2026-06-07
 

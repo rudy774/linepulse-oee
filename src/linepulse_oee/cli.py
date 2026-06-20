@@ -5,7 +5,13 @@ import json
 from pathlib import Path
 
 from .adapters import adapter_choices, convert_csv, write_canonical_csv
-from .analyze import analyze_csv, render_markdown, render_pareto_table, render_text_table
+from .analyze import (
+    analyze_csv,
+    render_markdown,
+    render_pareto_table,
+    render_recommendations,
+    render_text_table,
+)
 from .charts import render_pareto_svg
 from .validation import (
     ValidationIssue,
@@ -122,6 +128,11 @@ def main(argv: list[str] | None = None) -> int:
     if args.pareto and report.downtime_pareto:
         print()
         print(render_pareto_table(report))
+
+    if report.recommendations:
+        print()
+        print("Recommendations")
+        print(render_recommendations(report))
 
     if report.warnings:
         print()

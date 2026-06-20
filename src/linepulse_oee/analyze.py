@@ -179,6 +179,16 @@ def render_markdown(report: PlantReport) -> str:
                 )
             )
 
+    if report.recommendations:
+        lines.extend(["", "## Recommendations", ""])
+        for index, recommendation in enumerate(report.recommendations, start=1):
+            lines.append(f"{index}. **{recommendation.title}** ({recommendation.priority})")
+            lines.append(f"   - {recommendation.message}")
+            if recommendation.evidence:
+                lines.append(f"   - Evidence: {' '.join(recommendation.evidence)}")
+            if recommendation.next_steps:
+                lines.append(f"   - Next: {recommendation.next_steps[0]}")
+
     if report.warnings:
         lines.extend(["", "## Warnings", ""])
         lines.extend(f"- {warning}" for warning in report.warnings)
@@ -234,6 +244,16 @@ def render_pareto_table(report: PlantReport) -> str:
         "  ".join(value.ljust(widths[index]) for index, value in enumerate(row))
         for row in rows
     )
+
+
+def render_recommendations(report: PlantReport) -> str:
+    lines: list[str] = []
+    for index, recommendation in enumerate(report.recommendations, start=1):
+        lines.append(f"{index}. [{recommendation.priority}] {recommendation.title}")
+        lines.append(f"   {recommendation.message}")
+        if recommendation.next_steps:
+            lines.append(f"   Next: {recommendation.next_steps[0]}")
+    return "\n".join(lines)
 
 
 def _event_from_row(row: dict[str, str], line_num: int) -> Event:
