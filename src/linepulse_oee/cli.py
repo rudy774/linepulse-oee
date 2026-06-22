@@ -8,6 +8,7 @@ from .adapters import adapter_choices, convert_csv, write_canonical_csv
 from .analyze import (
     analyze_csv,
     render_markdown,
+    render_context_summary,
     render_pareto_table,
     render_recommendations,
     render_text_table,
@@ -21,9 +22,9 @@ from .validation import (
 )
 
 
-TEMPLATE = """asset,start,end,state,reason,good_count,scrap_count,ideal_cycle_seconds
-Press-1,2026-06-01T06:00:00,2026-06-01T06:30:00,running,,340,4,4.5
-Press-1,2026-06-01T06:30:00,2026-06-01T06:45:00,downtime,material jam,0,0,4.5
+TEMPLATE = """asset,start,end,state,reason,good_count,scrap_count,ideal_cycle_seconds,run_id,product,work_order,shift
+Press-1,2026-06-01T06:00:00,2026-06-01T06:30:00,running,,340,4,4.5,RUN-1001,Widget-A,WO-9001,day
+Press-1,2026-06-01T06:30:00,2026-06-01T06:45:00,downtime,material jam,0,0,4.5,RUN-1001,Widget-A,WO-9001,day
 """
 
 
@@ -45,6 +46,30 @@ def build_parser() -> argparse.ArgumentParser:
         "--reason-map",
         type=Path,
         help="Optional JSON reason-code map for grouping downtime reason aliases.",
+    )
+    analyze.add_argument(
+        "--run-id",
+        action="append",
+        dest="run_ids",
+        help="Only analyze event rows with this run_id. Can be used more than once.",
+    )
+    analyze.add_argument(
+        "--product",
+        action="append",
+        dest="products",
+        help="Only analyze event rows with this product. Can be used more than once.",
+    )
+    analyze.add_argument(
+        "--work-order",
+        action="append",
+        dest="work_orders",
+        help="Only analyze event rows with this work_order. Can be used more than once.",
+    )
+    analyze.add_argument(
+        "--shift",
+        action="append",
+        dest="shifts",
+        help="Only analyze event rows with this shift. Can be used more than once.",
     )
     analyze.add_argument("--json", type=Path, help="Write full report JSON to this path.")
     analyze.add_argument("--markdown", type=Path, help="Write Markdown report to this path.")
@@ -123,8 +148,20 @@ def main(argv: list[str] | None = None) -> int:
         args.csv_path,
         calendar_path=args.calendar,
         reason_map_path=args.reason_map,
+        filters={
+            "run_id": args.run_ids or (),
+            "product": args.products or (),
+            "work_order": args.work_orders or (),
+            "shift": args.shifts or (),
+        },
     )
     print(render_text_table(report))
+    context_summary = render_context_summary(report)
+    if context_summary:
+        print()
+        print("Context")
+        print(context_summary)
+
     if args.pareto and report.downtime_pareto:
         print()
         print(render_pareto_table(report))

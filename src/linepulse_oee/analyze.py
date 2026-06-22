@@ -11,6 +11,9 @@ from .shift_calendar import ShiftCalendar, read_shift_calendar
 from .validation import format_validation_warning, require_event_columns, validate_events
 
 
+CONTEXT_FIELDS = ("run_id", "product", "work_order", "shift")
+
+
 def read_events(source: str | Path | TextIO) -> list[Event]:
     """Read manufacturing state intervals from a CSV path or file object."""
     close_after = False
@@ -35,14 +38,22 @@ def analyze_events(
     events: Iterable[Event],
     calendar: ShiftCalendar | None = None,
     reason_map: ReasonCodeMap | None = None,
+    filters: dict[str, Iterable[str]] | None = None,
 ) -> PlantReport:
     events = sorted(events, key=lambda item: (item.asset, item.start, item.end))
+    normalized_filters = normalize_context_filters(filters)
+    if normalized_filters:
+        events = [
+            event for event in events if _event_matches_context_filters(event, normalized_filters)
+        ]
+
     by_asset: dict[str, AssetMetrics] = {}
     horizons: dict[str, list[datetime]] = {}
     planned_stop_seconds: dict[str, float] = {}
     covered_seconds: dict[str, float] = {}
     unmapped_reasons: set[str] = set()
     warnings: list[str] = []
+    contexts = summarize_contexts(events)
 
     for event in events:
         metrics = by_asset.setdefault(event.asset, AssetMetrics(asset=event.asset))
@@ -108,19 +119,34 @@ def analyze_events(
         for reason in sorted(unmapped_reasons):
             warnings.append(f"Reason {reason!r} was not mapped; used as-is.")
 
-    return PlantReport(assets=sorted(by_asset.values(), key=lambda item: item.asset), warnings=warnings)
+    return PlantReport(
+        assets=sorted(by_asset.values(), key=lambda item: item.asset),
+        warnings=warnings,
+        contexts=contexts,
+        filters=normalized_filters,
+    )
 
 
 def analyze_csv(
     path: str | Path,
     calendar_path: str | Path | None = None,
     reason_map_path: str | Path | None = None,
+    filters: dict[str, Iterable[str]] | None = None,
 ) -> PlantReport:
     calendar = read_shift_calendar(calendar_path) if calendar_path else None
     reason_map = read_reason_code_map(reason_map_path) if reason_map_path else None
     events = read_events(path)
-    validation_issues = validate_events(events, warn_gaps=False)
-    report = analyze_events(events, calendar=calendar, reason_map=reason_map)
+    normalized_filters = normalize_context_filters(filters)
+    filtered_events = [
+        event for event in events if _event_matches_context_filters(event, normalized_filters)
+    ]
+    validation_issues = validate_events(filtered_events, warn_gaps=False)
+    report = analyze_events(
+        filtered_events,
+        calendar=calendar,
+        reason_map=reason_map,
+        filters=normalized_filters,
+    )
     report.warnings[:0] = [format_validation_warning(issue) for issue in validation_issues]
     return report
 
@@ -129,11 +155,24 @@ def render_markdown(report: PlantReport) -> str:
     lines = [
         "# LinePulse OEE Report",
         "",
+    ]
+
+    if report.filters or report.contexts:
+        lines.extend(["## Report Context", ""])
+        if report.filters:
+            lines.append(f"- Filters: {_format_context_dict(report.filters)}")
+        if report.contexts:
+            lines.append(f"- Available context: {_format_context_dict(report.contexts)}")
+        lines.append("")
+
+    lines.extend(
+        [
         "## Asset Summary",
         "",
         "| Asset | OEE | Availability | Performance | Quality | Lost Hours | Good | Scrap |",
         "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
-    ]
+        ]
+    )
 
     for asset in report.assets:
         lines.append(
@@ -246,6 +285,15 @@ def render_pareto_table(report: PlantReport) -> str:
     )
 
 
+def render_context_summary(report: PlantReport) -> str:
+    lines: list[str] = []
+    if report.filters:
+        lines.append(f"Filters: {_format_context_dict(report.filters)}")
+    if report.contexts:
+        lines.append(f"Available context: {_format_context_dict(report.contexts)}")
+    return "\n".join(lines)
+
+
 def render_recommendations(report: PlantReport) -> str:
     lines: list[str] = []
     for index, recommendation in enumerate(report.recommendations, start=1):
@@ -254,6 +302,39 @@ def render_recommendations(report: PlantReport) -> str:
         if recommendation.next_steps:
             lines.append(f"   Next: {recommendation.next_steps[0]}")
     return "\n".join(lines)
+
+
+def normalize_context_filters(
+    filters: dict[str, Iterable[str]] | None,
+) -> dict[str, tuple[str, ...]]:
+    if not filters:
+        return {}
+
+    normalized: dict[str, tuple[str, ...]] = {}
+    for field in CONTEXT_FIELDS:
+        values = tuple(
+            value.strip()
+            for value in filters.get(field, ())
+            if value and value.strip()
+        )
+        if values:
+            normalized[field] = values
+    return normalized
+
+
+def summarize_contexts(events: Iterable[Event]) -> dict[str, tuple[str, ...]]:
+    values: dict[str, set[str]] = {field: set() for field in CONTEXT_FIELDS}
+    for event in events:
+        for field in CONTEXT_FIELDS:
+            value = getattr(event, field)
+            if value:
+                values[field].add(value)
+
+    return {
+        field: tuple(sorted(field_values))
+        for field, field_values in values.items()
+        if field_values
+    }
 
 
 def _event_from_row(row: dict[str, str], line_num: int) -> Event:
@@ -274,8 +355,28 @@ def _event_from_row(row: dict[str, str], line_num: int) -> Event:
         ideal_cycle_seconds=_parse_optional_float(
             row.get("ideal_cycle_seconds"), line_num, "ideal_cycle_seconds"
         ),
+        run_id=(row.get("run_id") or "").strip(),
+        product=(row.get("product") or "").strip(),
+        work_order=(row.get("work_order") or "").strip(),
+        shift=(row.get("shift") or "").strip(),
     )
     return event
+
+
+def _event_matches_context_filters(
+    event: Event,
+    filters: dict[str, tuple[str, ...]],
+) -> bool:
+    for field, allowed_values in filters.items():
+        if getattr(event, field) not in allowed_values:
+            return False
+    return True
+
+
+def _format_context_dict(context: dict[str, tuple[str, ...]]) -> str:
+    return "; ".join(
+        f"{field}={', '.join(values)}" for field, values in sorted(context.items()) if values
+    )
 
 
 def _normalize_reason(

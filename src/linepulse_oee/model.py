@@ -17,6 +17,10 @@ class Event:
     good_count: int = 0
     scrap_count: int = 0
     ideal_cycle_seconds: float | None = None
+    run_id: str = ""
+    product: str = ""
+    work_order: str = ""
+    shift: str = ""
 
     @property
     def duration_seconds(self) -> float:
@@ -135,6 +139,8 @@ class ReportRecommendation:
 class PlantReport:
     assets: list[AssetMetrics]
     warnings: list[str] = field(default_factory=list)
+    contexts: dict[str, tuple[str, ...]] = field(default_factory=dict)
+    filters: dict[str, tuple[str, ...]] = field(default_factory=dict)
 
     @property
     def bottlenecks(self) -> list[AssetMetrics]:
@@ -181,6 +187,12 @@ class PlantReport:
             "recommendations": [
                 recommendation.as_dict() for recommendation in self.recommendations
             ],
+            "contexts": {
+                name: list(values) for name, values in sorted(self.contexts.items())
+            },
+            "filters": {
+                name: list(values) for name, values in sorted(self.filters.items())
+            },
             "warnings": self.warnings,
         }
 
@@ -193,6 +205,26 @@ def safe_ratio(numerator: float, denominator: float) -> float:
 
 def build_recommendations(report: PlantReport) -> list[ReportRecommendation]:
     recommendations: list[ReportRecommendation] = []
+
+    if report.filters and not report.assets:
+        filter_text = _format_filters(report.filters)
+        return [
+            ReportRecommendation(
+                priority="high",
+                category="context-filter",
+                title="No events matched the selected context",
+                message=(
+                    "The report filters did not match any event rows. Check spelling, "
+                    "case, and whether the source CSV includes the optional context columns."
+                ),
+                evidence=(f"Applied filters: {filter_text}.",),
+                next_steps=(
+                    "Run without filters to list available context values in the JSON report.",
+                    "Confirm the CSV contains the expected run, product, work order, or shift identifiers.",
+                    "Re-run with the exact value from the source data.",
+                ),
+            )
+        ]
 
     if report.warnings:
         recommendations.append(
@@ -408,3 +440,9 @@ def _minutes(seconds: float) -> str:
 
 def _percent(value: float) -> str:
     return f"{value * 100:.1f}%"
+
+
+def _format_filters(filters: dict[str, tuple[str, ...]]) -> str:
+    return ", ".join(
+        f"{name}={'|'.join(values)}" for name, values in sorted(filters.items()) if values
+    )

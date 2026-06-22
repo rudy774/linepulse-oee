@@ -12,6 +12,7 @@ Recommendations appear in:
 
 | Category | Trigger | Purpose |
 | --- | --- | --- |
+| `context-filter` | A run, product, work-order, or shift filter matches no event rows. | Catch filter misspellings or missing context columns before interpreting an empty report. |
 | `data-quality` | Report warnings are present. | Fix event-history, reason-code, or coverage issues before comparing assets. |
 | `constraint` | One asset has the largest calculated lost production time. | Start improvement work where the report shows the largest loss. |
 | `downtime` | A named downtime reason leads the Pareto table. | Focus the first review on the biggest reason bucket. |

@@ -14,10 +14,10 @@ linepulse analyze reports/ignition_events.csv --pareto
 The converter writes a normal LinePulse CSV with these columns:
 
 ```csv
-asset,start,end,state,reason,good_count,scrap_count,ideal_cycle_seconds
+asset,start,end,state,reason,good_count,scrap_count,ideal_cycle_seconds,run_id,product,work_order,shift
 ```
 
-You can then use all existing analysis options, including `--calendar`, `--reason-map`, `--json`, `--markdown`, and `--pareto`.
+You can then use all existing analysis options, including `--calendar`, `--reason-map`, `--run-id`, `--product`, `--work-order`, `--shift`, `--json`, `--markdown`, and `--pareto`.
 
 ## Supported Adapters
 
@@ -80,6 +80,23 @@ Optional column:
 | Source column | LinePulse column |
 | --- | --- |
 | `ideal_cycle_seconds` | `ideal_cycle_seconds` |
+
+## Optional Production Context
+
+Adapters preserve common production-context columns when they are present in a source export. These columns are optional because early CSV exports often start with asset and interval history only.
+
+| Source alias | LinePulse column |
+| --- | --- |
+| `run_id`, `production_run_id`, `job_id` | `run_id` |
+| `product`, `product_code`, `sku`, `part_number` | `product` |
+| `work_order`, `work_order_id`, `order_id`, `production_order` | `work_order` |
+| `shift`, `shift_name` | `shift` |
+
+Context values can be used directly after conversion:
+
+```powershell
+linepulse analyze reports/mes_events.csv --product Widget-A --shift day --pareto
+```
 
 ## Adding New Adapters
 

@@ -12,6 +12,7 @@ The product direction is simple: preserve auditable event evidence, add enough c
 - Downtime Pareto tables across assets.
 - Shift calendars and planned-stop handling.
 - Reason-code normalization.
+- Optional run, product, work-order, and shift context fields with report filters.
 - Starter adapters for historian, MES, and manual downtime exports.
 - Dependency-free SVG Pareto charts.
 - CSV validation for event-history and count/state issues.
@@ -28,26 +29,21 @@ The product direction is simple: preserve auditable event evidence, add enough c
 
 ## Near-Term Priorities
 
-1. **Run, product, and work-order context**
-   - Add optional `run_id`, `product`, `work_order`, and `shift` fields.
-   - Allow reports to group or filter by those boundaries.
-   - Keep asset-only CSVs working for early users.
-
-2. **Count-delta imports**
+1. **Count-delta imports**
    - Support source exports with absolute counters.
    - Convert counter samples into interval deltas.
    - Detect resets, rollovers, negative deltas, and implausible jumps.
 
-3. **Defect and scrap classification**
+2. **Defect and scrap classification**
    - Add optional defect or scrap reason fields.
    - Report unclassified scrap.
    - Add quality Pareto output by defect reason when data is available.
 
-4. **Report lineage**
+3. **Report lineage**
    - Include source file, generated timestamp, schema version, calendar path, reason-map path, adapter, and validation summary in JSON and Markdown.
    - Make reports easier to reproduce and audit.
 
-5. **Adapter contracts and fixtures**
+4. **Adapter contracts and fixtures**
    - Add more realistic source examples from common historian, MES, ERP, and downtime-log exports.
    - Document adapter requirements and expected canonical output.
    - Keep adapter tests small, explicit, and source-shaped.
@@ -65,7 +61,7 @@ The product direction is simple: preserve auditable event evidence, add enough c
 The next release should make LinePulse more useful in a real improvement meeting:
 
 - report recommendations
-- run/product/work-order fields
+- context-aware example reports
 - stronger report lineage
 - one more realistic adapter fixture
 - documentation that shows a complete validate, analyze, review workflow

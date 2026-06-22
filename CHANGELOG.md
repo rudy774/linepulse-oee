@@ -13,6 +13,7 @@
 - Added dependency-free SVG downtime Pareto charts with `linepulse analyze --pareto-svg`.
 - Added `linepulse validate` for event CSV data-quality checks.
 - Added report recommendations in CLI, Markdown, and JSON output.
+- Added optional run, product, work-order, and shift context fields with `linepulse analyze` filters.
 
 ## v0.1.0 - 2026-06-07
 

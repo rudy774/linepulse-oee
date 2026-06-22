@@ -43,6 +43,20 @@ Cell-A,2026-06-01T07:20:00,2026-06-01T07:35:00,CHANGEOVER,model change,0,0,7.2
         self.assertEqual(rows[0]["scrap_count"], "2")
         self.assertEqual(rows[1]["state"], "changeover")
 
+    def test_adapters_preserve_optional_production_context(self) -> None:
+        source = """work_center,started_at,finished_at,event_type,reason_code,good_qty,reject_qty,target_cycle_seconds,production_run_id,product_code,work_order_id,shift_name
+Cell-A,2026-06-01T07:00:00,2026-06-01T07:20:00,PRODUCTION_RUN,,120,2,7.2,RUN-1001,Widget-A,WO-9001,day
+"""
+        rows = convert_csv(io.StringIO(source), "mes-production-log")
+
+        self.assertEqual(rows[0]["run_id"], "RUN-1001")
+        self.assertEqual(rows[0]["product"], "Widget-A")
+        self.assertEqual(rows[0]["work_order"], "WO-9001")
+        self.assertEqual(rows[0]["shift"], "day")
+
+        event = read_events(io.StringIO(_canonical_csv(rows)))[0]
+        self.assertEqual(event.work_order, "WO-9001")
+
     def test_manual_downtime_adapter_uses_planned_flag(self) -> None:
         source = """asset,down_start,down_end,reason,planned,ideal_cycle_seconds
 Press-1,2026-06-01T08:00:00,2026-06-01T08:15:00,team meeting,yes,4.5

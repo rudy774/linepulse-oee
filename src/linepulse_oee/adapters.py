@@ -16,6 +16,10 @@ CANONICAL_COLUMNS = (
     "good_count",
     "scrap_count",
     "ideal_cycle_seconds",
+    "run_id",
+    "product",
+    "work_order",
+    "shift",
 )
 
 
@@ -135,6 +139,10 @@ def _convert_ignition(row: dict[str, str], line_num: int) -> dict[str, str]:
         good_count=_optional(row, "good_parts", default="0"),
         scrap_count=_optional(row, "scrap_parts", default="0"),
         ideal_cycle_seconds=_optional(row, "ideal_cycle_seconds"),
+        run_id=_first_optional(row, "run_id", "production_run_id", "job_id"),
+        product=_first_optional(row, "product", "product_code", "sku", "part_number"),
+        work_order=_first_optional(row, "work_order", "work_order_id", "order_id", "production_order"),
+        shift=_first_optional(row, "shift", "shift_name"),
     )
 
 
@@ -148,6 +156,10 @@ def _convert_mes(row: dict[str, str], line_num: int) -> dict[str, str]:
         good_count=_optional(row, "good_qty", default="0"),
         scrap_count=_optional(row, "reject_qty", default="0"),
         ideal_cycle_seconds=_optional(row, "target_cycle_seconds"),
+        run_id=_first_optional(row, "run_id", "production_run_id", "job_id"),
+        product=_first_optional(row, "product", "product_code", "sku", "part_number"),
+        work_order=_first_optional(row, "work_order", "work_order_id", "order_id", "production_order"),
+        shift=_first_optional(row, "shift", "shift_name"),
     )
 
 
@@ -162,6 +174,10 @@ def _convert_manual_downtime(row: dict[str, str], line_num: int) -> dict[str, st
         good_count="0",
         scrap_count="0",
         ideal_cycle_seconds=_optional(row, "ideal_cycle_seconds"),
+        run_id=_first_optional(row, "run_id", "production_run_id", "job_id"),
+        product=_first_optional(row, "product", "product_code", "sku", "part_number"),
+        work_order=_first_optional(row, "work_order", "work_order_id", "order_id", "production_order"),
+        shift=_first_optional(row, "shift", "shift_name"),
     )
 
 
@@ -190,6 +206,10 @@ def _canonical_row(
     good_count: str = "0",
     scrap_count: str = "0",
     ideal_cycle_seconds: str = "",
+    run_id: str = "",
+    product: str = "",
+    work_order: str = "",
+    shift: str = "",
 ) -> dict[str, str]:
     return {
         "asset": asset.strip(),
@@ -200,6 +220,10 @@ def _canonical_row(
         "good_count": (good_count or "0").strip(),
         "scrap_count": (scrap_count or "0").strip(),
         "ideal_cycle_seconds": ideal_cycle_seconds.strip(),
+        "run_id": run_id.strip(),
+        "product": product.strip(),
+        "work_order": work_order.strip(),
+        "shift": shift.strip(),
     }
 
 
@@ -273,6 +297,14 @@ def _optional(row: dict[str, str], key: str, default: str = "") -> str:
     if value is None or not value.strip():
         return default
     return value.strip()
+
+
+def _first_optional(row: dict[str, str], *keys: str) -> str:
+    for key in keys:
+        value = row.get(key)
+        if value and value.strip():
+            return value.strip()
+    return ""
 
 
 _ADAPTERS: dict[str, tuple[AdapterSpec, RowAdapter]] = {

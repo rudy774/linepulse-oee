@@ -15,6 +15,7 @@ The current toolkit focuses on:
 - identify the largest downtime reasons with a plant-level Pareto table
 - generate a visual downtime Pareto chart as SVG
 - recommend the first improvement questions to investigate
+- focus reports by run, product, work order, or shift when that context is available
 - convert starter historian, MES, and manual downtime exports into the LinePulse CSV schema
 - validate event CSVs for overlapping intervals, timeline gaps, missing reasons, and count issues
 
@@ -103,6 +104,13 @@ Normalize messy downtime reason labels before Pareto reporting:
 linepulse analyze examples/machine_events.csv --reason-map examples/reason_codes.json --pareto
 ```
 
+Focus a report on one production boundary:
+
+```powershell
+linepulse analyze examples/machine_events_with_context.csv --run-id RUN-1001 --pareto
+linepulse analyze examples/machine_events_with_context.csv --product Widget-A --shift day
+```
+
 Write JSON and Markdown reports:
 
 ```powershell
@@ -128,6 +136,7 @@ Reports also include `Recommendations` that call out the top constrained asset, 
 
 Shift calendars are documented in [docs/shift-calendars.md](docs/shift-calendars.md).
 Reason-code normalization is documented in [docs/reason-codes.md](docs/reason-codes.md).
+Run, product, work-order, and shift context fields are documented in [docs/data-schema.md](docs/data-schema.md).
 Adapter examples are documented in [docs/adapters.md](docs/adapters.md).
 Pareto charts are documented in [docs/pareto-charts.md](docs/pareto-charts.md).
 CSV validation is documented in [docs/validation.md](docs/validation.md).
@@ -146,7 +155,6 @@ Manufacturing design principles are documented in [docs/manufacturing-design-pri
 
 LinePulse is moving from CSV OEE reports toward an evidence-to-decision workflow for small manufacturers and integrators.
 
-- run, product, and work-order context
 - count-delta imports with reset and rollover checks
 - defect and scrap classification
 - report lineage and source metadata

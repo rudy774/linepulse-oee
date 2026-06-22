@@ -12,6 +12,10 @@ LinePulse OEE expects CSV input with the following columns.
 | `good_count` | No | Good units produced during the interval. Defaults to `0`. |
 | `scrap_count` | No | Rejected units produced during the interval. Defaults to `0`. |
 | `ideal_cycle_seconds` | No | Ideal cycle time for the asset and product. Used for performance loss. |
+| `run_id` | No | Production run, job, or batch identifier. |
+| `product` | No | Product, SKU, part number, or model identifier. |
+| `work_order` | No | Work order or production order identifier. |
+| `shift` | No | Shift, crew, or scheduled production window label. |
 
 ## Metric Definitions
 
@@ -24,6 +28,18 @@ Source exports that do not match this schema can be converted with `linepulse co
 CSV event quality can be checked with `linepulse validate`. See [validation.md](validation.md).
 
 Reports include deterministic improvement recommendations in JSON and Markdown output. See [recommendations.md](recommendations.md).
+
+Optional context fields can be used to focus a report on one production boundary:
+
+```powershell
+linepulse analyze examples/machine_events_with_context.csv --run-id RUN-1001 --pareto
+linepulse analyze examples/machine_events_with_context.csv --product Widget-A --shift day
+linepulse analyze examples/machine_events_with_context.csv --work-order WO-9001 --json reports/wo-9001.json
+```
+
+Each context filter can be repeated. Values are matched exactly so the report boundary stays auditable.
+
+Keep `run_id` and `work_order` separate when the source can provide both. The work order represents the business demand or order, while the run ID represents the actual execution boundary used to attach state intervals, counts, downtime, and OEE calculations.
 
 Availability:
 

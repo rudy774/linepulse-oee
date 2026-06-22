@@ -1,0 +1,11 @@
+asset,start,end,state,reason,good_count,scrap_count,ideal_cycle_seconds,run_id,product,work_order,shift
+Press-1,2026-06-01T06:00:00,2026-06-01T06:45:00,running,,520,8,4.5,RUN-1001,Widget-A,WO-9001,day
+Press-1,2026-06-01T06:45:00,2026-06-01T07:05:00,downtime,die change,0,0,4.5,RUN-1001,Widget-A,WO-9001,day
+Press-1,2026-06-01T07:05:00,2026-06-01T08:00:00,running,,640,12,4.5,RUN-1001,Widget-A,WO-9001,day
+Press-1,2026-06-01T08:00:00,2026-06-01T08:15:00,planned_stop,break,0,0,4.5,RUN-1001,Widget-A,WO-9001,day
+Press-1,2026-06-01T08:15:00,2026-06-01T09:00:00,running,,500,5,4.5,RUN-1002,Widget-B,WO-9002,day
+Welder-2,2026-06-01T06:00:00,2026-06-01T06:30:00,running,,180,3,8.0,RUN-2001,Frame-X,WO-9100,day
+Welder-2,2026-06-01T06:30:00,2026-06-01T06:50:00,idle,waiting on fixtures,0,0,8.0,RUN-2001,Frame-X,WO-9100,day
+Welder-2,2026-06-01T06:50:00,2026-06-01T07:50:00,running,,410,10,8.0,RUN-2001,Frame-X,WO-9100,day
+Welder-2,2026-06-01T07:50:00,2026-06-01T08:10:00,changeover,model change,0,0,8.0,RUN-2002,Frame-Y,WO-9101,day
+Welder-2,2026-06-01T08:10:00,2026-06-01T09:00:00,running,,320,12,8.0,RUN-2002,Frame-Y,WO-9101,day
