@@ -14,6 +14,7 @@
 - Added `linepulse validate` for event CSV data-quality checks.
 - Added report recommendations in CLI, Markdown, and JSON output.
 - Added optional run, product, work-order, and shift context fields with `linepulse analyze` filters.
+- Added `linepulse dashboard` for self-contained operator HTML dashboards.
 
 ## v0.1.0 - 2026-06-07
 

@@ -15,6 +15,7 @@ The current toolkit focuses on:
 - identify the largest downtime reasons with a plant-level Pareto table
 - generate a visual downtime Pareto chart as SVG
 - recommend the first improvement questions to investigate
+- build self-contained operator dashboards for shift review
 - focus reports by run, product, work order, or shift when that context is available
 - convert starter historian, MES, and manual downtime exports into the LinePulse CSV schema
 - validate event CSVs for overlapping intervals, timeline gaps, missing reasons, and count issues
@@ -123,6 +124,12 @@ Generate a visual downtime Pareto chart:
 linepulse analyze examples/machine_events.csv --pareto-svg reports/pareto.svg
 ```
 
+Build an operator dashboard:
+
+```powershell
+linepulse dashboard examples/machine_events_with_context.csv --output reports/operator-dashboard.html
+```
+
 ## Example Output
 
 ```text
@@ -137,6 +144,7 @@ Reports also include `Recommendations` that call out the top constrained asset, 
 Shift calendars are documented in [docs/shift-calendars.md](docs/shift-calendars.md).
 Reason-code normalization is documented in [docs/reason-codes.md](docs/reason-codes.md).
 Run, product, work-order, and shift context fields are documented in [docs/data-schema.md](docs/data-schema.md).
+Operator dashboards are documented in [docs/operator-dashboard.md](docs/operator-dashboard.md).
 Adapter examples are documented in [docs/adapters.md](docs/adapters.md).
 Pareto charts are documented in [docs/pareto-charts.md](docs/pareto-charts.md).
 CSV validation is documented in [docs/validation.md](docs/validation.md).

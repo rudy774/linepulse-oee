@@ -14,6 +14,7 @@ from .analyze import (
     render_text_table,
 )
 from .charts import render_pareto_svg
+from .dashboard import render_operator_dashboard
 from .validation import (
     ValidationIssue,
     has_errors,
@@ -80,6 +81,58 @@ def build_parser() -> argparse.ArgumentParser:
         help="Print a downtime reason Pareto table after the asset summary.",
     )
 
+    dashboard = subparsers.add_parser(
+        "dashboard",
+        help="Build an operator HTML dashboard from a machine event CSV.",
+    )
+    dashboard.add_argument("csv_path", type=Path, help="Path to a machine event CSV.")
+    dashboard.add_argument(
+        "--calendar",
+        type=Path,
+        help="Optional JSON shift calendar for deriving planned production time.",
+    )
+    dashboard.add_argument(
+        "--reason-map",
+        type=Path,
+        help="Optional JSON reason-code map for grouping downtime reason aliases.",
+    )
+    dashboard.add_argument(
+        "--run-id",
+        action="append",
+        dest="run_ids",
+        help="Only analyze event rows with this run_id. Can be used more than once.",
+    )
+    dashboard.add_argument(
+        "--product",
+        action="append",
+        dest="products",
+        help="Only analyze event rows with this product. Can be used more than once.",
+    )
+    dashboard.add_argument(
+        "--work-order",
+        action="append",
+        dest="work_orders",
+        help="Only analyze event rows with this work_order. Can be used more than once.",
+    )
+    dashboard.add_argument(
+        "--shift",
+        action="append",
+        dest="shifts",
+        help="Only analyze event rows with this shift. Can be used more than once.",
+    )
+    dashboard.add_argument(
+        "--output",
+        "-o",
+        type=Path,
+        required=True,
+        help="Path for the generated operator dashboard HTML.",
+    )
+    dashboard.add_argument(
+        "--title",
+        default="LinePulse operator board",
+        help="Dashboard title shown at the top of the generated HTML.",
+    )
+
     convert = subparsers.add_parser(
         "convert",
         help="Convert supported historian, MES, or downtime exports to LinePulse CSV.",
@@ -144,16 +197,22 @@ def main(argv: list[str] | None = None) -> int:
             _write_text(args.json, json.dumps(payload, indent=2) + "\n")
         return 1 if has_errors(issues) else 0
 
+    if args.command == "dashboard":
+        report = analyze_csv(
+            args.csv_path,
+            calendar_path=args.calendar,
+            reason_map_path=args.reason_map,
+            filters=_context_filters(args),
+        )
+        _write_text(args.output, render_operator_dashboard(report, title=args.title))
+        print(f"Wrote operator dashboard to {args.output}")
+        return 0
+
     report = analyze_csv(
         args.csv_path,
         calendar_path=args.calendar,
         reason_map_path=args.reason_map,
-        filters={
-            "run_id": args.run_ids or (),
-            "product": args.products or (),
-            "work_order": args.work_orders or (),
-            "shift": args.shifts or (),
-        },
+        filters=_context_filters(args),
     )
     print(render_text_table(report))
     context_summary = render_context_summary(report)
@@ -190,6 +249,15 @@ def main(argv: list[str] | None = None) -> int:
 def _write_text(path: Path, content: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8")
+
+
+def _context_filters(args: argparse.Namespace) -> dict[str, tuple[str, ...]]:
+    return {
+        "run_id": tuple(args.run_ids or ()),
+        "product": tuple(args.products or ()),
+        "work_order": tuple(args.work_orders or ()),
+        "shift": tuple(args.shifts or ()),
+    }
 
 
 if __name__ == "__main__":

@@ -13,6 +13,7 @@ The product direction is simple: preserve auditable event evidence, add enough c
 - Shift calendars and planned-stop handling.
 - Reason-code normalization.
 - Optional run, product, work-order, and shift context fields with report filters.
+- Self-contained operator HTML dashboards.
 - Starter adapters for historian, MES, and manual downtime exports.
 - Dependency-free SVG Pareto charts.
 - CSV validation for event-history and count/state issues.
@@ -53,7 +54,6 @@ The product direction is simple: preserve auditable event evidence, add enough c
 - TEEP and capacity-utilization reporting once planned-time and OEE boundaries are stronger.
 - MTBF and MTTR summaries from downtime/state history.
 - Notebook examples for continuous-improvement reviews.
-- Optional lightweight dashboard after the file-based workflow is mature.
 - Source metadata manifests for teams that need stronger traceability.
 
 ## v0.2.0 Target
@@ -62,6 +62,7 @@ The next release should make LinePulse more useful in a real improvement meeting
 
 - report recommendations
 - context-aware example reports
+- operator dashboard output
 - stronger report lineage
 - one more realistic adapter fixture
 - documentation that shows a complete validate, analyze, review workflow
